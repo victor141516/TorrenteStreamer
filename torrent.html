@@ -42,15 +42,7 @@
                         data: {hashes: json[0].hash},
                     })
                     .done(function() {
-                        $.ajax({
-                            url: '/command/toggleSequentialDownload',
-                            type: 'POST',
-                            dataType: 'multipart/form-data',
-                            data: {hashes: hash},
-                        })
-                        .done(function() {
-                            $("#stream-link").attr('href', 'http://v1415.zapto.org/Torrent/' + json[0].name);
-                        });
+                        $("#stream-link").attr('href', 'http://v1415.zapto.org/Torrent/' + json[0].name);
                     });
                 }
             );
