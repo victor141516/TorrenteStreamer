@@ -1,0 +1,17 @@
+extend default
+
+block content
+  ul
+    li: div.torrent
+      form
+        p
+          label Torrent file
+          input(type='file')
+          button Send
+
+    li: div.magnet
+      form
+        p
+          label Magnet link
+          input(type='text')
+          button Send
