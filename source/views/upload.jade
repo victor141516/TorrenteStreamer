@@ -3,15 +3,15 @@ extend default
 block content
   ul
     li: div.torrent
-      form
+      form(method='POST', action='/upload')
         p
           label Torrent file
-          input(type='file')
+          input(type='file', name='torrent')
           button Send
 
     li: div.magnet
-      form
+      form(method='POST', action='/upload')
         p
           label Magnet link
-          input(type='text')
+          input(type='text', name='magnet')
           button Send
