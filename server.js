@@ -1,9 +1,10 @@
 var express = require('express')
-    , logger = require('morgan')
-    , jade = require('jade')
-    , app = express()
-    , bodyParser = require('body-parser')
-    , multer  = require('multer')
+  , logger = require('morgan')
+  , jade = require('jade')
+  , app = express()
+  , bodyParser = require('body-parser')
+  , multer  = require('multer')
+  , upload = multer({ dest: 'uploads/' })
 
 app.use(logger('dev'))
 app.use(express.static(__dirname + '/static'))
@@ -30,13 +31,13 @@ app.get('/upload', function (req, res, next) {
     }
 })
 
-app.post('/upload', function (req, res, next) {
+app.post('/upload', upload.single('torrent'), function (req, res, next) {
     try {
         if (undefined !== req.body.magnet) {
             res.send(req.body.magnet)
         } else if (undefined !== req.body.torrent) {
-            console.log(req.body)
-            res.send(req.body)
+            console.log(req.file)
+            res.send(req.file)
         }
     } catch (e) {
         next(e)
