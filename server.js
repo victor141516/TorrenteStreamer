@@ -70,10 +70,13 @@ app.post('/upload', upload.single('torrent'), function (req, res, next) {
                     res.send("Error processing video")
                 })
                 .on('metadata', function(info) {
+                    size = info.input.duration * req.body.quality / 8
                     res.writeHead(200, {
                         'Content-Disposition': 'inline; filename="' + torrentHash + '.mp4"',
                         'Content-Type': 'video/*',
-                        'Content-Length': info.input.duration * req.body.quality / 8
+                        'Content-Range': 'bytes 0-' + size-1 + '/' + size,
+                        'Accept-Ranges': 'bytes',
+                        'Content-Length': size
                     })
                 })
                 .stream().pipe(res)
@@ -110,10 +113,13 @@ app.post('/upload', upload.single('torrent'), function (req, res, next) {
                         res.send("Error processing video")
                     })
                     .on('metadata', function(info) {
+                        size = info.input.duration * req.body.quality / 8
                         res.writeHead(200, {
                             'Content-Disposition': 'inline; filename="' + torrentHash + '.mp4"',
                             'Content-Type': 'video/*',
-                            'Content-Length': info.input.duration * req.body.quality / 8
+                            'Content-Range': 'bytes 0-' + size-1 + '/' + size,
+                            'Accept-Ranges': 'bytes',
+                            'Content-Length': size
                         })
                     })
                     .stream().pipe(res)
