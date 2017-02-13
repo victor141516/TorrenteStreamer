@@ -56,10 +56,6 @@ app.post('/upload', upload.single('torrent'), function (req, res, next) {
 
             stream = correctFile.createReadStream()
 
-            res.writeHead(200, {
-                'Content-Type': 'video/*'
-            })
-
             new Transcoder(stream)
                 // .maxSize(320, 240)
                 .videoCodec('libx264')
@@ -72,6 +68,15 @@ app.post('/upload', upload.single('torrent'), function (req, res, next) {
                 .format('mp4')
                 .on('finish', function() {
                     next();
+                })
+                .on('error', function() {
+                    res.send("Error processing video")
+                })
+                .on('metadata', function(info) {
+                    res.writeHead(200, {
+                        'Content-Type': 'video/*',
+                        'Content-Length': info.input.duration * req.body.quality / 8
+                    })
                 })
                 .stream().pipe(res)
         })

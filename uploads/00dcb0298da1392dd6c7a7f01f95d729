@@ -1,9 +1,0 @@
-<html>
-    <head>
-        <title>Torrent streaming</title>
-    </head>
-    <body>
-        <input type="file" id="torrent-file">
-        <input type="text" id="magnet">
-    </body>
-</html>
