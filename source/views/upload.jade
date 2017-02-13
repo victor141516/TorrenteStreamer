@@ -3,7 +3,7 @@ extend default
 block content
   ul
     li: div.torrent
-      form(method='POST', action='/upload')
+      form(enctype='multipart/form-data', method='POST', action='/upload')
         p
           label Torrent file
           input(type='file', name='torrent')
