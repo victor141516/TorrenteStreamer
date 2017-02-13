@@ -11,6 +11,7 @@
     "nodemon": "^1.9.2",
     "stream-transcoder": "0.0.5",
     "stylus": "^0.54.5",
+    "transfer-rate": "^2.0.1",
     "webtorrent": "^0.98.7"
   },
   "devDependencies": {},

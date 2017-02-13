@@ -7,6 +7,7 @@ block content
         p
           label Torrent file
           input(type='file', name='torrent')
+          input(type='range', name='quality', min='400', max='2000', value='800')
           button Send
 
     li: div.magnet
@@ -14,4 +15,5 @@ block content
         p
           label Magnet link
           input(type='text', name='magnet')
+          input(type='range', name='quality', min='400', max='2000', value='800')
           button Send
