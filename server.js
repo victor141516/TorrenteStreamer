@@ -53,6 +53,7 @@ app.post('/upload', upload.single('torrent'), function (req, res, next) {
                     maxLength = file.length
                 }
             }
+
             stream = correctFile.createReadStream()
 
             res.writeHead(200, {
