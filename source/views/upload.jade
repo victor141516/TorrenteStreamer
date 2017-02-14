@@ -1,19 +1,25 @@
 extend default
 
 block content
-  ul
-    li: div.torrent
-      form(enctype='multipart/form-data', method='POST', action='/upload')
-        p
-          label Torrent file
-          input(type='file', name='torrent')
-          input(type='range', name='quality', min='400', max='2000', value='800')
-          button Send
+  div.torrent
+    form(enctype='multipart/form-data', method='POST', action='/upload')
+      ul
+        li: label Torrent file
+        li: input(type='file', id='torrent', name='torrent')
+        li: input(type='range', name='quality', min='400', max='2000', value='800')
+        li: button(class="send-button") Send
 
-    li: div.magnet
-      form(method='POST', action='/upload')
-        p
-          label Magnet link
-          input(type='text', name='magnet')
-          input(type='range', name='quality', min='400', max='2000', value='800')
-          button Send
+  div.magnet
+    form(method='POST', action='/upload')
+      ul
+        li: label Magnet link
+        li: input(type='text', id='magnet', name='magnet')
+        li: input(type='range', name='quality', min='400', max='2000', value='800')
+        li: button(class="send-button") Send
+
+block js
+  script.
+    document.addEventListener('paste', function(e) {
+      e.stopPropagation(); e.preventDefault();
+      document.getElementById("magnet").value = (e.clipboardData || window.clipboardData).getData('Text')
+    });

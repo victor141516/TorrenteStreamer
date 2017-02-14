@@ -47,31 +47,31 @@ app.get('/v/q:quality/:hash_url', function (req, res, next) {
         out.on('metadata', function(info) {
             var size = info.input.duration * (parseInt(req.params.quality) + audioBitRate) / 8
 
-            if (!req.headers.range) {
+            // if (!req.headers.range) {
                 res.writeHead(200, {
                     'Content-Type': 'video/*',
-                    'Content-Range': 'bytes 0-' + (size-1).toString() + '/' + size.toString(),
-                    'Accept-Ranges': 'bytes',
+                    // 'Content-Range': 'bytes 0-' + (size-1).toString() + '/' + size.toString(),
+                    // 'Accept-Ranges': 'bytes',
                     'Content-Length': size.toString()
                 })
-            } else {
-                var positions = req.headers.range.replace(/bytes=/, "").split("-")
-                var start = parseInt(positions[0], 10)
-                var dif = (size - start) + 1;
+            // } else {
+            //     var positions = req.headers.range.replace(/bytes=/, "").split("-")
+            //     var start = parseInt(positions[0], 10)
+            //     var dif = (size - start) + 1;
 
-                res.writeHead(200, {
-                    'Content-Type': 'video/*',
-                    'Content-Range': 'bytes ' + start.toString() + '-' + (size-1).toString() + '/' + size.toString(),
-                    'Accept-Ranges': 'bytes',
-                    'Content-Length': dif.toString()
-                })
-            }
+            //     res.writeHead(200, {
+            //         'Content-Type': 'video/*',
+            //         'Content-Range': 'bytes ' + start.toString() + '-' + (size-1).toString() + '/' + size.toString(),
+            //         'Accept-Ranges': 'bytes',
+            //         'Content-Length': dif.toString()
+            //     })
+            // }
         })
 
         out.stream().pipe(res)
     } catch (e) {
         console.log(e)
-        res.send("Error")
+        res.redirect('/')
         next(e)
     }
 })
@@ -81,6 +81,7 @@ app.get('/', function (req, res, next) {
         var html = jade.renderFile(__dirname + '/source/views/upload.jade')
         res.send(html)
     } catch (e) {
+        res.redirect('/')
         next(e)
     }
 })
@@ -106,6 +107,7 @@ app.post('/upload', upload.single('torrent'), function (req, res, next) {
             res.redirect('/v/q' + req.body.quality + '/' + error.toString().split(" ").pop() + '.mp4')
         })
     } catch (e) {
+        res.redirect('/')
         next(e)
     }
 })
