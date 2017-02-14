@@ -22,6 +22,8 @@ app.get('/v/q:quality/:hash_url', function (req, res, next) {
         var torrent = torrentClient.get(hash)
         var maxLength = 0
         var correctFile = null
+        var audioBitRate = 128
+
         for (var i = torrent.files.length - 1; i >= 0; i--) {
             file = torrent.files[i]
             if (file.length > maxLength) {
@@ -36,14 +38,14 @@ app.get('/v/q:quality/:hash_url', function (req, res, next) {
             .videoCodec('libx264')
             .videoBitrate(req.params.quality * 1000)
             .audioCodec('aac')
-            .audioBitrate(128 * 1000)
+            .audioBitrate(audioBitRate * 1000)
             .format('mp4')
             .on('finish', function() {
                 next();
             })
 
         out.on('metadata', function(info) {
-            var size = info.input.duration * req.params.quality / 8
+            var size = info.input.duration * (parseInt(req.params.quality) + audioBitRate) / 8
 
             if (!req.headers.range) {
                 res.writeHead(200, {
@@ -69,6 +71,7 @@ app.get('/v/q:quality/:hash_url', function (req, res, next) {
         out.stream().pipe(res)
     } catch (e) {
         console.log(e)
+        res.send("Error")
         next(e)
     }
 })
