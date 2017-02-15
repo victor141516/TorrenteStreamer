@@ -32,43 +32,47 @@ app.get('/v/q:quality/:hash_url', function (req, res, next) {
             }
         }
 
-        stream = correctFile.createReadStream()
-
-        out = new Transcoder(stream)
-            .videoCodec('libx264')
-            .videoBitrate(req.params.quality * 1000)
-            .audioCodec('aac')
-            .audioBitrate(audioBitRate * 1000)
-            .format('mp4')
-            .on('finish', function() {
-                next();
+        if (req.params.quality == 'ORG') {
+            correctFile.createReadStream().pipe(res)
+            res.writeHead(200, {
+                'Content-Type': 'video/*',
+                'Content-Length': maxLength
             })
-
-        out.on('metadata', function(info) {
-            var size = info.input.duration * (parseInt(req.params.quality) + audioBitRate) / 8
-
-            // if (!req.headers.range) {
-                res.writeHead(200, {
-                    'Content-Type': 'video/*',
-                    // 'Content-Range': 'bytes 0-' + (size-1).toString() + '/' + size.toString(),
-                    // 'Accept-Ranges': 'bytes',
-                    'Content-Length': size.toString()
+        } else {
+            new Transcoder(correctFile.createReadStream())
+                .videoCodec('libx264')
+                .videoBitrate(req.params.quality * 1000)
+                .audioCodec('aac')
+                .audioBitrate(audioBitRate * 1000)
+                .format('mp4')
+                .on('finish', function() {
+                    next();
                 })
-            // } else {
-            //     var positions = req.headers.range.replace(/bytes=/, "").split("-")
-            //     var start = parseInt(positions[0], 10)
-            //     var dif = (size - start) + 1;
+                .on('metadata', function(info) {
+                    var size = info.input.duration * (parseInt(req.params.quality) + audioBitRate) / 8
 
-            //     res.writeHead(200, {
-            //         'Content-Type': 'video/*',
-            //         'Content-Range': 'bytes ' + start.toString() + '-' + (size-1).toString() + '/' + size.toString(),
-            //         'Accept-Ranges': 'bytes',
-            //         'Content-Length': dif.toString()
-            //     })
-            // }
-        })
+                    // if (!req.headers.range) {
+                        res.writeHead(200, {
+                            'Content-Type': 'video/*',
+                            // 'Content-Range': 'bytes 0-' + (size-1).toString() + '/' + size.toString(),
+                            // 'Accept-Ranges': 'bytes',
+                            'Content-Length': size.toString()
+                        })
+                    // } else {
+                    //     var positions = req.headers.range.replace(/bytes=/, "").split("-")
+                    //     var start = parseInt(positions[0], 10)
+                    //     var dif = (size - start) + 1;
 
-        out.stream().pipe(res)
+                    //     res.writeHead(200, {
+                    //         'Content-Type': 'video/*',
+                    //         'Content-Range': 'bytes ' + start.toString() + '-' + (size-1).toString() + '/' + size.toString(),
+                    //         'Accept-Ranges': 'bytes',
+                    //         'Content-Length': dif.toString()
+                    //     })
+                    // }
+                })
+                .stream().pipe(res)
+        }
     } catch (e) {
         console.log(e)
         res.redirect('/')
