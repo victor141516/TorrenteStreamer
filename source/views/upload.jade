@@ -1,23 +1,24 @@
 extend default
 
 block content
-  div.torrent
-    form(enctype='multipart/form-data', method='POST', action='/upload')
-      ul
-        li: label(for='torrent') Torrent file
-        li: input(type='file', id='torrent', name='torrent')
-        li: label(for='quality') Quality
-        li: input(type='range', name='quality', min='400', max='2000', value='800')
-        li: button(class="send-button") Send
+  form(enctype='multipart/form-data', method='POST', action='/upload')
+    div
+      div.torrent.upload.common
+        ul
+          li: label(for='torrent') Torrent file
+          li: input(type='file', id='torrent', name='torrent', style='width: 160px')
 
-  div.magnet(style='margin-left: 100px;')
-    form(method='POST', action='/upload')
+      div.magnet.upload.common
+        ul
+          li: label(for='magnet') Magnet link
+          li: input(type='text', id='magnet', name='magnet')
+
+    div.send.common
       ul
-        li: label(for='magnet') Magnet link
-        li: input(type='text', id='magnet', name='magnet')
         li: label(for='quality') Quality
         li: input(type='range', name='quality', min='400', max='2000', value='800')
-        li: button(class="send-button") Send
+        li: button(class="view-button") View
+
 
 block js
   script.

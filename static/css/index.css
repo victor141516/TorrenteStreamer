@@ -7,15 +7,24 @@
 body {
   font-family: 'Source Code Pro', monospace;
 }
-.send-button {
+.view-button {
   width: 100px;
   height: 20px;
 }
-div .torrent {
-  line-height: 200%;
+div {
+  text-align: center;
+}
+div .upload {
+  display: inline-block;
 }
 div .magnet {
+  margin-left: 100px;
+}
+div .common {
   line-height: 200%;
+}
+div .send {
+  margin-top: 50px;
 }
 ul {
   list-style-type: none;
@@ -53,7 +62,6 @@ ul {
 .main-content {
   margin: 50px auto;
   max-width: 600px;
-  display: flex;
 }
 .main-content p {
   line-height: 1.6;
