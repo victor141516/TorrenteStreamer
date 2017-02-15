@@ -33,45 +33,49 @@ app.get('/v/q:quality/:hash_url', function (req, res, next) {
         }
 
         if (req.params.quality == 'ORG') {
-            correctFile.createReadStream().pipe(res)
             res.writeHead(200, {
                 'Content-Type': 'video/*',
                 'Content-Length': maxLength
             })
+            correctFile.createReadStream().pipe(res)
         } else {
-            new Transcoder(correctFile.createReadStream())
-                .videoCodec('libx264')
-                .videoBitrate(req.params.quality * 1000)
-                .audioCodec('aac')
-                .audioBitrate(audioBitRate * 1000)
-                .format('mp4')
-                .on('finish', function() {
-                    next();
-                })
-                .on('metadata', function(info) {
-                    var size = info.input.duration * (parseInt(req.params.quality) + audioBitRate) / 8
+            var stream = correctFile.createReadStream()
 
-                    // if (!req.headers.range) {
-                        res.writeHead(200, {
-                            'Content-Type': 'video/*',
-                            // 'Content-Range': 'bytes 0-' + (size-1).toString() + '/' + size.toString(),
-                            // 'Accept-Ranges': 'bytes',
-                            'Content-Length': size.toString()
-                        })
-                    // } else {
-                    //     var positions = req.headers.range.replace(/bytes=/, "").split("-")
-                    //     var start = parseInt(positions[0], 10)
-                    //     var dif = (size - start) + 1;
-
+            // new Transcoder(stream)
+            //     .videoCodec('libx264')
+            //     .videoBitrate(req.params.quality * 1000)
+            //     .audioCodec('aac')
+            //     .audioBitrate(audioBitRate * 1000)
+            //     .format('mp4')
+            //     .on('metadata', function(info) {
+            //         var size = info.input.duration * (parseInt(req.params.quality) + audioBitRate) / 8
+            //         if (!req.headers.range) {
+            //             res.writeHead(200, {
+            //                 'Content-Type': 'video/*',
+            //                 // 'Content-Range': 'bytes 0-' + (size-1).toString() + '/' + size.toString(),
+            //                 // 'Accept-Ranges': 'bytes',
+            //                 'Content-Length': size.toString()
+            //             })
+                    // } else  {
                     //     res.writeHead(200, {
                     //         'Content-Type': 'video/*',
-                    //         'Content-Range': 'bytes ' + start.toString() + '-' + (size-1).toString() + '/' + size.toString(),
-                    //         'Accept-Ranges': 'bytes',
-                    //         'Content-Length': dif.toString()
+                    //         //'Content-Range': 'bytes ' + (parseInt(req.headers.range.replace(/bytes=/, "").split("-")[0], 10)).toString() + '-' + (size-1).toString() + '/' + size.toString(),
+                    //         //'Accept-Ranges': 'bytes',
+                    //         'Content-Length': ((size - start) + 1).toString()
                     //     })
+
+                        new Transcoder(stream)
+                            .videoCodec('libx264')
+                            .videoBitrate(req.params.quality * 1000)
+                            .audioCodec('aac')
+                            .audioBitrate(audioBitRate * 1000)
+                            .format('mp4')
+                            .on('finish', function() {
+                                next();
+                            })
+                            .stream().pipe(res)
                     // }
-                })
-                .stream().pipe(res)
+                // }).stream()
         }
     } catch (e) {
         console.log(e)
