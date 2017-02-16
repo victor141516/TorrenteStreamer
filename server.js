@@ -50,6 +50,9 @@ app.get('/v/q:quality/:hash_url', function (req, res, next) {
             })
             correctFile.createReadStream().pipe(res)
         } else if (parseInt(quality)) {
+            res.writeHead(200, {
+                'Content-Type': 'video/*'
+            })
             new Transcoder(correctFile.createReadStream())
                 .videoCodec('libx264')
                 .videoBitrate(parseInt(quality) * 1000)
