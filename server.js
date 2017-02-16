@@ -19,8 +19,12 @@ app.use(bodyParser.json());
 
 app.get('/v/q:quality/:hash_url', function (req, res, next) {
     try {
-        hash = req.params.hash_url.split(".")[0]
+        hash = req.params.hash_url.split(".mp4")[0]
         var torrent = torrentClient.get(hash)
+        if (torrent == null) {
+            res.status(404).send('Error');
+            return
+        }
         var maxLength = 0
         var correctFile = null
         var audioBitRate = 128
@@ -124,13 +128,17 @@ app.post('/upload', upload.single('torrent'), function (req, res, next) {
         torrentClient.add(magnet_torrent, { path: __dirname + '/downloads/' + md5(name) }, function (torrent) {
             console.log("Torrent added")
             console.log("Download path: " + torrent.path)
-            res.redirect('/v/q' + req.body.quality + '/' + torrent.infoHash + '.mp4')
+            addr = '/v/q' + req.body.quality + '/' + torrent.infoHash + '.mp4'
+            console.log("Redirect: " + addr)
+            res.redirect(addr)
         })
 
         torrentClient.on('error', function (error) {
             console.log("Torrent client error")
             console.log(error)
-            res.redirect('/')
+            addr = '/v/q' + req.body.quality + '/' + error.toString().split(" ").pop() + '.mp4'
+            console.log("Redirect (on error): " + addr)
+            res.redirect(addr)
         })
     } catch (e) {
         res.redirect('/')
