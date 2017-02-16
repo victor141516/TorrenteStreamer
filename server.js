@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 
 app.get('/v/q:quality/:hash_url', function (req, res, next) {
     try {
-        hash = req.params.hash_url.split(".mp4")[0]
+        hash = req.params.hash_url.split(".")[0]
         var torrent = torrentClient.get(hash)
         var maxLength = 0
         var correctFile = null
