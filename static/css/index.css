@@ -33,6 +33,7 @@ ul {
   background: url("/img/header.jpg");
   background-position: bottom;
   background-size: 100%;
+  background-repeat: no-repeat;
 }
 .header .page-title {
   font-weight: 200;

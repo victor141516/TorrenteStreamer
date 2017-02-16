@@ -4,18 +4,24 @@
   "description": "",
   "main": "server.js",
   "dependencies": {
+    "body-parser": "^1.16.1",
     "express": "^4.14.1",
     "fluent-ffmpeg": "^2.1.0",
+    "get-video-duration": "^0.1.0",
     "jade": "^1.11.0",
+    "md5": "^2.2.1",
     "morgan": "^1.8.1",
     "multer": "^1.3.0",
     "nodemon": "^1.9.2",
+    "pug": "^2.0.0-beta11",
     "stream-transcoder": "0.0.5",
     "stylus": "^0.54.5",
     "transfer-rate": "^2.0.1",
     "webtorrent": "^0.98.7"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "debug": "^2.6.1"
+  },
   "scripts": {
     "build-css": "stylus source/stylesheets/index.styl -o static/css",
     "watch-css": "stylus source/stylesheets/index.styl -o static/css -w",
