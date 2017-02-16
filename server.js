@@ -14,81 +14,53 @@ app.use(logger('dev'))
 app.use(express.static(__dirname + '/static'))
 app.use(bodyParser.urlencoded({
     extended: true
-}));
-app.use(bodyParser.json());
+}))
+app.use(bodyParser.json())
 
 app.get('/v/q:quality/:hash_url', function (req, res, next) {
     try {
         hash = req.params.hash_url.split(".mp4")[0]
         var torrent = torrentClient.get(hash)
         if (torrent == null) {
-            res.status(404).send('Error');
+            res.status(404).send('Error')
             return
         }
-        var maxLength = 0
-        var correctFile = null
+        var correctFile = torrent.files[0]
         var audioBitRate = 128
 
         console.log("View url (hash: " + hash + ")")
 
         for (var i = torrent.files.length - 1; i >= 0; i--) {
             file = torrent.files[i]
-            if (file.length > maxLength) {
+            if (file.length > correctFile.length) {
                 correctFile = file
-                maxLength = file.length
+                correctFile.length = file.length
             }
         }
         console.log("File: " + (correctFile ? correctFile.name : correctFile))
 
         var quality = req.params.quality
+        console.log("Quality: " + quality)
 
         if (quality == 'ORG') {
-            console.log("Quality: ORIGINAL")
-            console.log("Size: " + maxLength.toString())
+            console.log("Size: " + correctFile.length.toString())
             res.writeHead(200, {
                 'Content-Type': 'video/*',
-                'Content-Length': maxLength
+                'Content-Length': correctFile.length.toString()
             })
             correctFile.createReadStream().pipe(res)
         } else if (parseInt(quality)) {
-            console.log("Quality: " + quality)
-
-            // new Transcoder(correctFile.createReadStream())
-            //     .custom()
-            //     .on('error', function(error) {console.log(error)})
-            //     .on('metadata', function(info) {
-            //         var size = info.input.duration * (parseInt(quality) + audioBitRate) / 8
-            //         console.log("Calculated transcoded size: " + size.toString())
-            //         // if (!req.headers.range) {
-            //         //     res.writeHead(200, {
-            //         //         'Content-Type': 'video/*',
-            //         //         // 'Content-Range': 'bytes 0-' + (size-1).toString() + '/' + size.toString(),
-            //         //         // 'Accept-Ranges': 'bytes',
-            //         //         'Content-Length': size.toString()
-            //         //     })
-            //         // } else  {
-            //         //     start = parseInt(req.headers.range.replace(/bytes=/, "").split("-")[0], 10)
-            //             res.writeHead(200, {
-            //                 'Content-Type': 'video/*',
-            //                 //'Content-Range': 'bytes ' + start.toString() + '-' + (size-1).toString() + '/' + size.toString(),
-            //                 //'Accept-Ranges': 'bytes',
-            //                 // 'Content-Length': ((size - start) + 1).toString()
-            //                 'Content-Length': size.toString()
-            //             })
-
-                        new Transcoder(correctFile.createReadStream())
-                            .videoCodec('libx264')
-                            .videoBitrate(parseInt(quality) * 1000)
-                            .audioCodec('aac')
-                            .audioBitrate(audioBitRate * 1000)
-                            .format('mp4')
-                            .on('finish', function() {
-                                next();
-                            })
-                            .on('error', function(error) {console.log(error)})
-                            .stream().pipe(res)
-                    // }
-                // }).exec()
+            new Transcoder(correctFile.createReadStream())
+                .videoCodec('libx264')
+                .videoBitrate(parseInt(quality) * 1000)
+                .audioCodec('aac')
+                .audioBitrate(audioBitRate * 1000)
+                .format('mp4')
+                .on('finish', function() {
+                    next()
+                })
+                .on('error', function(error) {console.log(error)})
+                .stream().pipe(res)
         } else {
             res.redirect('/')
         }
@@ -136,7 +108,11 @@ app.post('/upload', upload.single('torrent'), function (req, res, next) {
         torrentClient.on('error', function (error) {
             console.log("Torrent client error")
             console.log(error)
-            addr = '/v/q' + req.body.quality + '/' + error.toString().split(" ").pop() + '.mp4'
+            if (error.toString().indexOf("duplicate") < 0) {
+                addr = '/'
+            } else {
+                addr = '/v/q' + req.body.quality + '/' + error.toString().split(" ").pop() + '.mp4'
+            }
             console.log("Redirect (on error): " + addr)
             res.redirect(addr)
         })
@@ -147,5 +123,5 @@ app.post('/upload', upload.single('torrent'), function (req, res, next) {
 })
 
 app.listen(process.env.PORT || 3000, function () {
-    console.log('Listening on http://localhost:' + (process.env.PORT || 3000))
+    console.log('Serving')
 })
