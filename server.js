@@ -50,10 +50,7 @@ app.get('/v/q:quality/:hash_url', (req, res, next) => {
             })
             correctFile.createReadStream().pipe(res)
         } else if (parseInt(quality)) {
-            res.writeHead(200, {
-                'Content-Type': 'video/*'
-            })
-            new Transcoder(correctFile.createReadStream())
+            transcoder = new Transcoder(correctFile.createReadStream())
                 .videoCodec('libx264')
                 .videoBitrate(parseInt(quality) * 1000)
                 .audioCodec('aac')
@@ -63,7 +60,16 @@ app.get('/v/q:quality/:hash_url', (req, res, next) => {
                     next()
                 })
                 .on('error', error => {console.log(error)})
-                .stream().pipe(res)
+            t_stream = transcoder.stream()
+
+            transcoder.on('metadata', info => {
+                console.log(info.input.duration)
+                res.writeHead(200, {
+                    'Content-Type': 'video/*',
+                    'Content-Length': info.input.duration * (audioBitRate + parseInt(quality) / 1000)
+                })
+                t_stream.pipe(res)
+            })
         } else {
             res.redirect('/')
         }
@@ -134,6 +140,6 @@ app.post('/upload', upload.single('torrent'), (req, res, next) => {
     }
 })
 
-app.listen(process.env.PORT || 80, () => {
+app.listen(process.env.PORT || 3000, () => {
     console.log('Serving')
 })
