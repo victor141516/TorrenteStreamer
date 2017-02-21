@@ -17,7 +17,7 @@ app.use(bodyParser.urlencoded({
 }))
 app.use(bodyParser.json())
 
-app.get('/v/q:quality/:hash_url', function (req, res, next) {
+app.get('/v/q:quality/:hash_url', (req, res, next) => {
     try {
         hash = req.params.hash_url.split(".mp4")[0]
         var torrent = torrentClient.get(hash)
@@ -59,10 +59,10 @@ app.get('/v/q:quality/:hash_url', function (req, res, next) {
                 .audioCodec('aac')
                 .audioBitrate(audioBitRate * 1000)
                 .format('mp4')
-                .on('finish', function() {
+                .on('finish', () => {
                     next()
                 })
-                .on('error', function(error) {console.log(error)})
+                .on('error', error => {console.log(error)})
                 .stream().pipe(res)
         } else {
             res.redirect('/')
@@ -74,7 +74,7 @@ app.get('/v/q:quality/:hash_url', function (req, res, next) {
     }
 })
 
-app.get('/', function (req, res, next) {
+app.get('/', (req, res, next) => {
     try {
         var html = pug.renderFile(__dirname + '/source/views/upload.pug')
         res.send(html)
@@ -84,7 +84,7 @@ app.get('/', function (req, res, next) {
     }
 })
 
-app.post('/upload', upload.single('torrent'), function (req, res, next) {
+app.post('/upload', upload.single('torrent'), (req, res, next) => {
     try {
         if (undefined !== req.body.magnet && req.body.magnet !== '') {
             magnet_torrent = req.body.magnet
@@ -100,7 +100,11 @@ app.post('/upload', upload.single('torrent'), function (req, res, next) {
             return
         }
 
-        torrentClient.add(magnet_torrent, { path: __dirname + '/downloads/' + md5(name) }, function (torrent) {
+        torrentClient.add(magnet_torrent, { path: __dirname + '/downloads/' + md5(name) }, torrent => {
+            torrent.on('error', error => {
+                console.log("Torrent error")
+                console.log(error)
+            })
             console.log("Torrent added")
             console.log("Download path: " + torrent.path)
             addr = '/v/q' + req.body.quality + '/' + torrent.infoHash + '.mp4'
@@ -108,15 +112,20 @@ app.post('/upload', upload.single('torrent'), function (req, res, next) {
             res.redirect(addr)
         })
 
-        torrentClient.on('error', function (error) {
-            console.log("Torrent client error")
-            console.log(error)
-            if (error.toString().indexOf("duplicate") < 0) {
-                addr = '/'
-            } else {
-                addr = '/v/q' + req.body.quality + '/' + error.toString().split(" ").pop() + '.mp4'
+        torrentClient.on('error', error => {
+            if (res._headerSent) {
+                return
             }
-            console.log("Redirect (on error): " + addr)
+            if (error.toString().indexOf("duplicate") < 0) {
+                console.log("Torrent client error")
+                console.log(error)
+                addr = '/'
+                console.log("Redirect (on error): " + addr)
+            } else {
+                console.log("Duplicate torrent")
+                addr = '/v/q' + req.body.quality + '/' + error.toString().split(" ").pop() + '.mp4'
+                console.log("Redirect: " + addr)
+            }
             res.redirect(addr)
         })
     } catch (e) {
@@ -125,6 +134,6 @@ app.post('/upload', upload.single('torrent'), function (req, res, next) {
     }
 })
 
-app.listen(process.env.PORT || 3000, function () {
+app.listen(process.env.PORT || 3000, () => {
     console.log('Serving')
 })
