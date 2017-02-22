@@ -9,6 +9,7 @@ var express = require('express')
   , upload = multer({ storage: storage })
   , torrentClient = new (require('webtorrent'))
   , Transcoder = require('stream-transcoder')
+  , debug = false
 
 app.use(logger('dev'))
 app.use(express.static(__dirname + '/static'))
@@ -28,7 +29,7 @@ app.get('/v/q:quality/:hash_url', (req, res, next) => {
         var correctFile = torrent.files[0]
         var audioBitRate = 128
 
-        console.log("View url (hash: " + hash + ")")
+        if (debug) console.log("View url (hash: " + hash + ")")
 
         for (var i = torrent.files.length - 1; i >= 0; i--) {
             file = torrent.files[i]
@@ -37,13 +38,13 @@ app.get('/v/q:quality/:hash_url', (req, res, next) => {
                 correctFile.length = file.length
             }
         }
-        console.log("File: " + (correctFile ? correctFile.name : correctFile))
+        if (debug) console.log("File: " + (correctFile ? correctFile.name : correctFile))
 
         var quality = req.params.quality
-        console.log("Quality: " + quality)
+        if (debug) console.log("Quality: " + quality)
 
         if (quality == 'ORG' || parseInt(quality) == 2000) {
-            console.log("Size: " + correctFile.length.toString())
+            if (debug) console.log("Size: " + correctFile.length.toString())
             res.writeHead(200, {
                 'Content-Type': 'video/*',
                 'Content-Length': correctFile.length.toString()
@@ -60,11 +61,11 @@ app.get('/v/q:quality/:hash_url', (req, res, next) => {
                 .on('finish', () => {
                     next()
                 })
-                .on('error', error => {console.log(error)})
+                .on('error', error => {if (debug) console.log(error)})
             t_stream = transcoder.stream()
 
             transcoder.on('metadata', info => {
-                console.log(info.input.duration)
+                if (debug) console.log(info.input.duration)
                 res.writeHead(200, {
                     'Content-Type': 'video/*',
                     'Content-Length': info.input.duration * (audioBitRate + parseInt(quality) / 1000)
@@ -75,7 +76,7 @@ app.get('/v/q:quality/:hash_url', (req, res, next) => {
             res.redirect('/')
         }
     } catch (e) {
-        console.log(e)
+        if (debug) console.log(e)
         res.redirect('/')
         next(e)
     }
@@ -96,26 +97,26 @@ app.post('/upload', upload.single('torrent'), (req, res, next) => {
         if (undefined !== req.body.magnet && req.body.magnet !== '') {
             magnet_torrent = req.body.magnet
             name = magnet_torrent
-            console.log("Magnet taken")
+            if (debug) console.log("Magnet taken")
         } else if (undefined !== req.file) {
             magnet_torrent = req.file.buffer
             name = req.file.originalname
-            console.log("Torrent file taken")
+            if (debug) console.log("Torrent file taken")
         } else {
-            console.log("Torrent/magen adquisition error")
+            if (debug) console.log("Torrent/magen adquisition error")
             res.redirect('/')
             return
         }
 
         torrentClient.add(magnet_torrent, { path: __dirname + '/downloads/' + md5(name) }, torrent => {
             torrent.on('error', error => {
-                console.log("Torrent error")
-                console.log(error)
+                if (debug) console.log("Torrent error")
+                if (debug) console.log(error)
             })
-            console.log("Torrent added")
-            console.log("Download path: " + torrent.path)
+            if (debug) console.log("Torrent added")
+            if (debug) console.log("Download path: " + torrent.path)
             addr = '/v/q' + req.body.quality + '/' + torrent.infoHash + '.mp4'
-            console.log("Redirect: " + addr)
+            if (debug) console.log("Redirect: " + addr)
             res.redirect(addr)
         })
 
@@ -124,14 +125,14 @@ app.post('/upload', upload.single('torrent'), (req, res, next) => {
                 return
             }
             if (error.toString().indexOf("duplicate") < 0) {
-                console.log("Torrent client error")
-                console.log(error)
+                if (debug) console.log("Torrent client error")
+                if (debug) console.log(error)
                 addr = '/'
-                console.log("Redirect (on error): " + addr)
+                if (debug) console.log("Redirect (on error): " + addr)
             } else {
-                console.log("Duplicate torrent")
+                if (debug) console.log("Duplicate torrent")
                 addr = '/v/q' + req.body.quality + '/' + error.toString().split(" ").pop() + '.mp4'
-                console.log("Redirect: " + addr)
+                if (debug) console.log("Redirect: " + addr)
             }
             res.redirect(addr)
         })
@@ -142,5 +143,5 @@ app.post('/upload', upload.single('torrent'), (req, res, next) => {
 })
 
 app.listen(process.env.PORT || 3000, () => {
-    console.log('Serving')
+    if (debug) console.log('Serving')
 })
