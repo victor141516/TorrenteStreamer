@@ -55,6 +55,7 @@ app.get('/v/q:quality/:hash_url', (req, res, next) => {
                 .videoBitrate(parseInt(quality) * 1000)
                 .audioCodec('aac')
                 .audioBitrate(audioBitRate * 1000)
+                .channels(2)
                 .format('mp4')
                 .on('finish', () => {
                     next()
