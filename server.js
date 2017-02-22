@@ -42,7 +42,7 @@ app.get('/v/q:quality/:hash_url', (req, res, next) => {
         var quality = req.params.quality
         console.log("Quality: " + quality)
 
-        if (quality == 'ORG') {
+        if (quality == 'ORG' || parseInt(quality) == 2000) {
             console.log("Size: " + correctFile.length.toString())
             res.writeHead(200, {
                 'Content-Type': 'video/*',
