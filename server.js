@@ -10,7 +10,7 @@ var express = require('express')
   , WebTorrent = new (require('webtorrent'))
   , Transcoder = require('stream-transcoder')
   , Promise = require('promise')
-  , debug = false
+  , debug = true
   , bitrateRange = {'min': 400, 'max': 2000, 'default': 2000}
   , maxDownloadCache = 1000000000
   , servingPort = 3000
@@ -84,7 +84,7 @@ function getStream(file, videoBitrate, audioBitrate, start_end) {
             if (quality == bitrateRange.max) {
                 if (debug) console.log('Debug: ' + 'Size: ' + file.length.toString())
                 resolve({
-                    'httpCode': 206,
+                    'httpCode': start_end ? 206 : 200,
                     'size': file.length,
                     'stream': file_stream
                 })
