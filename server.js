@@ -12,6 +12,7 @@ var express = require('express')
   , Promise = require('promise')
   , debug = false
   , bitrateRange = {'min': 400, 'max': 2000, 'default': 2000}
+  , maxDownloadCache = 1000000000
   , servingPort = 3000
 
 app.use(logger('dev'))
@@ -21,6 +22,22 @@ app.use(bodyParser.urlencoded({
 }))
 app.use(bodyParser.json())
 
+
+function removeOldTorrents() {
+    return new Promise(function(resolve) {
+        var allSize = 0
+        WebTorrent.torrents.reverse().forEach(function(torrent, index) {
+            if (allSize > maxDownloadCache) {
+                torrent.destroy()
+            } else {
+                torrent.files.forEach(function(file) {
+                    allSize += file.length
+                })
+            }
+        })
+        resolve(allSize)
+    })
+}
 
 function getBiggestFile(files) {
     correct = files[0]
@@ -67,7 +84,7 @@ function getStream(file, videoBitrate, audioBitrate, start_end) {
             if (quality == bitrateRange.max) {
                 if (debug) console.log('Debug: ' + 'Size: ' + file.length.toString())
                 resolve({
-                    'httpCode': start_end ? 206 : 200,
+                    'httpCode': 206,
                     'size': file.length,
                     'stream': file_stream
                 })
@@ -79,7 +96,6 @@ function getStream(file, videoBitrate, audioBitrate, start_end) {
                     .audioBitrate(audioBitrate * 1000)
                     .channels(2)
                     .format('mp4')
-                    // .custom('movflags', 'faststart')
                 transcoded_stream = transcoder.stream()
 
                 transcoder.on('error', error => {
@@ -89,7 +105,7 @@ function getStream(file, videoBitrate, audioBitrate, start_end) {
                 transcoder.on('metadata', info => {
                     if (debug) console.log('Debug: ' + info.input.duration)
                     resolve({
-                        'httpCode': start_end ? 206 : 200,
+                        'httpCode': 200,
                         'size': info.input.duration * (audioBitrate + quality / 1000),
                         'stream': transcoded_stream
                     })
@@ -125,10 +141,10 @@ function addTorrent(input_torrent, name) {
     )
 }
 
-app.get('/v/q:quality/:hash_url', (req, res, next) => {
+app.get('/v/:hash_url', (req, res, next) => {
     try {
         const compiledFunction = pug.compileFile(__dirname + '/source/views/player.pug')
-        var html = compiledFunction({'video_src': '/s/q' + req.params.quality + '/' + req.params.hash_url})
+        var html = compiledFunction({'video_src': '/s/' + req.params.hash_url})
         res.send(html)
     } catch (e) {
         if (debug) console.log('Debug: ' + e)
@@ -166,17 +182,15 @@ app.get('/d/q:quality/:hash_url', (req, res, next) => {
     }
 })
 
-app.get('/s/q:quality/:hash_url', (req, res, next) => {
+app.get('/s/:hash_url', (req, res, next) => {
     try {
         var torrent = WebTorrent.get(req.params.hash_url.split('.mp4')[0])
           , correctFile = getBiggestFile(torrent.files)
-          , quality = req.params.quality
 
         if (debug) console.log('Debug: ' + 'View url (hash: ' + (req.params.hash_url.split('.mp4')[0]) + ')')
         if (debug) console.log('Debug: ' + 'File: ' + (correctFile ? correctFile.name : correctFile))
-        if (debug) console.log('Debug: ' + 'Quality: ' + quality)
 
-        getStream(correctFile, quality, 128)
+        getStream(correctFile, bitrateRange.max, 128)
             .then(result => {
                 var range = req.headers.range;
                 var positions = range.replace(/bytes=/, "").split("-");
@@ -194,7 +208,7 @@ app.get('/s/q:quality/:hash_url', (req, res, next) => {
                 result.stream.pipe(res)
             })
             .catch(error => {
-                console.log(error)
+                if (debug) console.log(error)
                 res.redirect('/')
             })
     } catch (e) {
@@ -206,13 +220,15 @@ app.get('/s/q:quality/:hash_url', (req, res, next) => {
 
 app.get('/', (req, res, next) => {
     try {
-        const compiledFunction = pug.compileFile(__dirname + '/source/views/upload.pug')
-        var html = compiledFunction({
-            'min_bitrate': bitrateRange.min,
-            'max_bitrate': bitrateRange.max,
-            'def_bitrate': bitrateRange.default
+        removeOldTorrents().then(() => {
+            const compiledFunction = pug.compileFile(__dirname + '/source/views/upload.pug')
+            var html = compiledFunction({
+                'min_bitrate': bitrateRange.min,
+                'max_bitrate': bitrateRange.max,
+                'def_bitrate': bitrateRange.default
+            })
+            res.send(html)
         })
-        res.send(html)
     } catch (e) {
         res.redirect('/')
         next(e)
@@ -224,10 +240,11 @@ app.post('/upload', upload.single('torrent'), (req, res, next) => {
         torrent_info = getTorrentFromRequest(req)
         addTorrent(torrent_info.torrent, torrent_info.name)
             .then(hash => {
-                addr = '/'
-                    + ((req.body.view === undefined) ? 'd' : 'v')
-                    + '/q' + req.body.quality
-                    + '/' + hash + '.mp4'
+                removeOldTorrents()
+                if ((req.body.view === undefined))
+                    addr = '/d/q' + req.body.quality + '/' + hash + '.mp4'
+                else
+                    addr = '/v/' + hash + '.mp4'
                 if (debug) console.log('Debug: ' + 'Redirect: ' + addr)
                 res.redirect(addr)
             })
