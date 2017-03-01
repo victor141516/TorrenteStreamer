@@ -1,5 +1,9 @@
 extend default
 
+block header
+  .header
+    h1.page-title Torrente Streamer
+
 block content
   form(enctype='multipart/form-data', method='POST', action='/upload')
     div
@@ -16,8 +20,10 @@ block content
     div.send.common
       ul
         li: label(for='quality') Quality
-        li: input(type='range', name='quality', min='400', max='2000', value='800')
-        li: button(class="view-button") View
+        li: input(type='range', name='quality', min=`${min_bitrate}`, max=`${max_bitrate}`, value=`${def_bitrate}`)
+        li
+          button(name='view', class="action-button") View
+          button(name='download', class="action-button") Download
 
 
 block js
