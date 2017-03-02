@@ -10,7 +10,9 @@ var express = require('express')
   , WebTorrent = new (require('webtorrent'))
   , Transcoder = require('stream-transcoder')
   , Promise = require('promise')
-  , debug = true
+  , srt2vtt = require('srt2vtt')
+  , fs = require('fs')
+  , debug = false
   , bitrateRange = {'min': 400, 'max': 2000, 'default': 2000}
   , maxDownloadCache = 1000000000
   , servingPort = 3000
@@ -185,20 +187,20 @@ app.get('/d/q:quality/:hash_url', (req, res, next) => {
 app.get('/s/:hash_url', (req, res, next) => {
     try {
         var torrent = WebTorrent.get(req.params.hash_url.split('.mp4')[0])
-          , correctFile = getBiggestFile(torrent.files)
+        var correctFile = getBiggestFile(torrent.files)
 
         if (debug) console.log('Debug: ' + 'View url (hash: ' + (req.params.hash_url.split('.mp4')[0]) + ')')
         if (debug) console.log('Debug: ' + 'File: ' + (correctFile ? correctFile.name : correctFile))
 
-        getStream(correctFile, bitrateRange.max, 128)
-            .then(result => {
-                var range = req.headers.range;
-                var positions = range.replace(/bytes=/, "").split("-");
-                var start = parseInt(positions[0], 10);
-                var total = result.size;
-                var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
-                var chunksize = (end - start) + 1;
+        var range = req.headers.range;
+        var positions = range.replace(/bytes=/, "").split("-");
+        var start = parseInt(positions[0], 10);
+        var total = correctFile.length;
+        var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
+        var chunksize = (end - start) + 1;
 
+        getStream(correctFile, bitrateRange.max, 128, {'start': start, 'end': end})
+            .then(result => {
                 res.writeHead(result.httpCode, {
                     "Content-Range": "bytes " + start + "-" + end + "/" + total,
                     "Accept-Ranges": "bytes",
@@ -232,6 +234,30 @@ app.get('/', (req, res, next) => {
     } catch (e) {
         res.redirect('/')
         next(e)
+    }
+})
+
+app.get('/subtitle/:subtitle_name', (req, res, next) => {
+    try {
+        fs.FileReadStream(__dirname + '/downloads/subtitles/' + req.params.subtitle_name).pipe(res)
+    } catch (e) {
+        res.writeHead(500)
+        res.send()
+    }
+})
+
+app.post('/subtitle', upload.single('subtitle'), (req, res, next) => {
+    try {
+        srt2vtt(req.file.buffer, function(err, vttData) {
+            if (err) throw new Error(err)
+            var hash = md5(req.file.originalname)
+            fs.writeFileSync(__dirname + '/downloads/subtitles/' + hash + '.vtt', vttData);
+            res.send(hash + '.vtt')
+        })
+    } catch (e) {
+        console.log(e)
+        res.writeHead(500)
+        res.send()
     }
 })
 
