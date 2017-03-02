@@ -13,7 +13,8 @@ block raw-body
             p(class="vjs-no-js")
                 a(href="http://videojs.com/html5-video-support/", target="_blank") To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video
 
-        input(type="file", id="subtitle")
+        label(for="subtitle") Subtitles
+        input(type="file", id="subtitle", name="subtitle")
 
 block css
     link(href='//vjs.zencdn.net/5.11/video-js.min.css', rel='stylesheet')
