@@ -1,17 +1,16 @@
 extend default
 
 block raw-body
-    div(style="visibility:hidden; opacity:0", class="dropzone")
-    div(class="torrent-player")
-        video(
+    div.dropzone(style="visibility:hidden; opacity:0")
+    div.torrent-player
+        video.video-js.vjs-big-play-centered(
             id="player",
-            class="video-js vjs-big-play-centered",
             controls,
             preload="auto",
             data-setup='{}'
         )
             source(src=`${video_src}`, type="video/mp4")
-            p(class="vjs-no-js")
+            p.vjs-no-js
                 a(href="http://videojs.com/html5-video-support/", target="_blank") To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video
 
         div: label(for="subtitle") Click below button and choose a subtitle file or drag'n'drop it anywhere in the page.

@@ -1,3 +1,5 @@
+function $(id) { return document.getElementById(id); }
+
 function prepareDropFile() {
     window.addEventListener("dragenter", function(e) {
         lastTarget = e.target;
@@ -49,4 +51,17 @@ function addSubtitle(file) {
             }, 200);
         }
     };
+}
+
+function searchTorrent() {
+    var term = $('search').value;
+    var xhr = new XMLHttpRequest();
+    xhr.open('get', '/search/' + encodeURI(term, true));
+    xhr.send();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log(this.responseText);
+            $('magnet').value = this.responseText;
+        }
+    }
 }

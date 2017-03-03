@@ -16,6 +16,7 @@ var express = require('express')
   , bitrateRange = {'min': 400, 'max': 2000, 'default': 2000}
   , maxDownloadCache = 1000000000
   , servingPort = 3000
+  , TPBendpoint = 'https://ukpirateproxy.xyz'
 
 app.use(logger('dev'))
 app.use(express.static(__dirname + '/static'))
@@ -255,7 +256,18 @@ app.post('/subtitle', upload.single('subtitle'), (req, res, next) => {
             res.send(hash + '.vtt')
         })
     } catch (e) {
-        console.log(e)
+        if (debug) console.log(e)
+        res.writeHead(500)
+        res.send()
+    }
+})
+
+app.get('/search/:term', (req, res, next) => {
+    try {
+        var term = req.params.term
+        res.send(term)
+    } catch (e) {
+        if (debug) console.log(e)
         res.writeHead(500)
         res.send()
     }
