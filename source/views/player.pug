@@ -1,10 +1,11 @@
 extend default
 
 block raw-body
+    div(style="visibility:hidden; opacity:0", class="dropzone")
     div(class="torrent-player")
         video(
             id="player",
-            class="video-js",
+            class="video-js vjs-big-play-centered",
             controls,
             preload="auto",
             data-setup='{}'
@@ -13,8 +14,8 @@ block raw-body
             p(class="vjs-no-js")
                 a(href="http://videojs.com/html5-video-support/", target="_blank") To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video
 
-        label(for="subtitle") Subtitles
-        input(type="file", id="subtitle", name="subtitle")
+        div: label(for="subtitle") Click below button and choose a subtitle file or drag'n'drop it anywhere in the page.
+        div: input(type="file", id="subtitle", name="subtitle")
 
 block css
     link(href='//vjs.zencdn.net/5.11/video-js.min.css', rel='stylesheet')
@@ -22,21 +23,13 @@ block css
 block js
     script(src="//vjs.zencdn.net/5.11/video.min.js")
     script.
-        document.getElementById('subtitle').addEventListener("change", function(e){
+        prepareDropFile();
+        window.addEventListener("drop", function (e) {
+            if (e.dataTransfer.files.length == 1) {
+                addSubtitle(e.dataTransfer.files[0]);
+            }
+        });
+        document.getElementById('subtitle').addEventListener("change", function(e) {
             var file = document.getElementById('subtitle').files[0];
             addSubtitle(file);
         });
-        function addSubtitle(file) {
-            var formData = new FormData();
-            var xhr = new XMLHttpRequest();
-            formData.append('subtitle', file);
-            xhr.open('post', '/subtitle', true);
-            xhr.send(formData);
-            xhr.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    var sub_src = this.responseText;
-                    console.log(sub_src);
-                    videojs('player').addRemoteTextTrack({'src': '/subtitle/' + sub_src, 'kind': 'subtitles'});
-                }
-            };
-        }

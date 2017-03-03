@@ -5,6 +5,7 @@ block header
     h1.page-title Torrente Streamer
 
 block content
+  div(style="visibility:hidden; opacity:0", class="dropzone")
   form(enctype='multipart/form-data', method='POST', action='/upload')
     div
       div.torrent.upload.common
@@ -28,6 +29,12 @@ block content
 
 block js
   script.
+    prepareDropFile();
+    window.addEventListener("drop", function (e) {
+        if (e.dataTransfer.files.length == 1) {
+            document.getElementById("torrent").files = e.dataTransfer.files;
+        }
+    });
     document.addEventListener('paste', function(e) {
       e.stopPropagation(); e.preventDefault();
       document.getElementById("magnet").value = (e.clipboardData || window.clipboardData).getData('Text')
