@@ -24,13 +24,13 @@ block content
         li: label(for='magnet') Magnet link
         li: input(type='text', id='magnet', name='magnet')
 
-  div.send.common
-    ul
-      li: label(for='quality') Quality
-      li: input(type='range', name='quality', min=`${min_bitrate}`, max=`${max_bitrate}`, value=`${def_bitrate}`)
-      li
-        button.action-button(name='view', style="margin-right: 10px;") View
-        button.action-button(name='download') Download
+    div.send.common
+      ul
+        li: label(for='quality') Quality
+        li: input(type='range', name='quality', min=`${min_bitrate}`, max=`${max_bitrate}`, value=`${def_bitrate}`)
+        li
+          button.action-button(name='view', style="margin-right: 10px;") View
+          button.action-button(name='download') Download
 
 
 block js
