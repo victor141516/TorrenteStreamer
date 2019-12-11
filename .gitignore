@@ -1,6 +1,1 @@
-uploads/
-!downloads/
-downloads/*
-!downloads/subtitles/
-downloads/subtitles/*
 node_modules/

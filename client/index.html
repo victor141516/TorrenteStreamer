@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Torrente Streamer</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdn.materialdesignicons.com/4.7.95/css/materialdesignicons.min.css">
+    <style>
+        #app {
+            margin-top: 10vh;
+        }
+
+        #error-message {
+            width: 50%;
+            max-width: 600px;
+            position: absolute;
+            top: 3vh;
+            right: 100px;
+        }
+
+        #player {
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <section class="section">
+            <div id="error-message" v-if="errorMessage !== ''" class="notification is-danger">
+                <button class="delete" @click="errorMessage = ''"></button>
+                {{errorMessage}}
+            </div>
+            <div class="container">
+                <h1 class="title">
+                    Torrente Streamer
+                </h1>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">Select a torrent file:</label>
+                            <div class="file is-boxed is-primary">
+                                <label class="file-label">
+                                    <input class="file-input" type="file" name="resume" ref="torrentInput"
+                                        v-model="torrentFile">
+                                    <span class="file-cta">
+                                        <span class="file-icon">
+                                            <i class="mdi mdi-upload"></i>
+                                        </span>
+                                        <span class="file-label">
+                                            Choose a file…
+                                        </span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <button class="button is-info" @click="handleTorrent"
+                                :disabled="torrentFile === ''">Play!</button>
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">Or use a magnet link:</label>
+                            <input class="input" type="text" placeholder="Magnet link" v-model="magnetLink">
+                        </div>
+                        <div class="field">
+                            <button class="button is-info" @click="handleMagnet"
+                                :disabled="magnetLink === ''">Play!</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="player" v-if="videoLink !== ''">
+                <video class="video-js" controls preload="auto" width="960" height="540" data-setup="{}">
+                    <source :src="videoLink" type="video/mp4" />
+                </video>
+            </div>
+        </section>
+    </div>
+    <script>
+        app = new Vue({
+            el: '#app',
+            data: {
+                torrentFile: '',
+                magnetLink: '',
+                errorMessage: '',
+                videoLink: ''
+            },
+            methods: {
+                async handleTorrent() {
+                    const data = new FormData()
+                    data.append('torrent-file', this.$refs.torrentInput.files[0])
+
+                    const res = await (await fetch('/send/torrent', {
+                        method: 'POST',
+                        body: data
+                    })).json()
+                    if (res.id) this.showVdeo(res.id)
+                    else {
+                        this.errorMessage = res.message
+                    }
+                },
+                async handleMagnet() {
+                    const res = await (await fetch('/send/magnet', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ uri: this.magnetLink })
+                    })).json()
+                    if (res.id) this.showVdeo(res.id)
+                    else {
+                        this.errorMessage = res.message
+                    }
+                },
+                showVdeo(videoId) {
+                    this.videoLink = `/v/${videoId}`
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
