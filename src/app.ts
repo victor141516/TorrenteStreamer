@@ -16,6 +16,7 @@ const logger = getLogger('server')
 app.use(fileupload())
 app.use(express.json())
 app.use(cors())
+app.use(express.static('public'))
 
 async function handleMagnetOrTorrent(magnetUriOrTorrent: string | Buffer) {
     const parsedTorrent = parseTorrent(magnetUriOrTorrent)

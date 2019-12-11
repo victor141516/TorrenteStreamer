@@ -3,24 +3,29 @@
         /* Basic Options */
         "target": "ES2019",
         "module": "commonjs",
-        "lib": ["es2019"],
+        "lib": [
+            "es2019",
+            "dom"
+        ],
         "declaration": true,
         "outDir": "dist",
         "sourceMap": true,
-
         /* Strict Type-Checking Options */
         "strict": true,
-
         /* Additional Checks */
         "noUnusedLocals": true,
         "noImplicitReturns": true,
-
         /* Module Resolution Options */
         "moduleResolution": "node",
-        "typeRoots": ["./node_modules/@types"],
+        "typeRoots": [
+            "./node_modules/@types"
+        ],
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true
     },
     "compileOnSave": true,
-    "include": ["./src/**/*.ts", "src/add_to_db.js"]
+    "include": [
+        "./src/**/*.ts",
+        "config.ts"
+    ]
 }
