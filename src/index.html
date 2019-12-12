@@ -93,6 +93,12 @@
                 errorMessage: '',
                 videoLink: ''
             },
+            mounted() {
+                if (location.pathname.startsWith('/v/')) {
+                    const streamId = location.pathname.split('/v/')[1].split('/')[0]
+                    this.videoLink = `/stream/${streamId}`
+                }
+            },
             methods: {
                 async handleTorrent() {
                     const data = new FormData()
@@ -122,7 +128,8 @@
                     }
                 },
                 showVdeo(videoId) {
-                    this.videoLink = `/v/${videoId}`
+                    window.history.pushState({ videoId }, videoId, `/v/${videoId}`);
+                    this.videoLink = `/stream/${videoId}`
                 }
             }
         })

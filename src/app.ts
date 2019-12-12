@@ -16,7 +16,6 @@ const logger = getLogger('server')
 app.use(fileupload())
 app.use(express.json())
 app.use(cors())
-app.use(express.static('public'))
 
 async function handleMagnetOrTorrent(magnetUriOrTorrent: string | Buffer) {
     const parsedTorrent = parseTorrent(magnetUriOrTorrent)
@@ -68,7 +67,7 @@ app.post('/send/torrent', async (req: Request, res: Response) => {
     }
 })
 
-app.get('/v/:torrentHash', (req, res) => {
+app.get('/stream/:torrentHash', (req, res) => {
     const torrentHash = req.params.torrentHash
     const fileToStream = currenStreams[torrentHash]
     if (!fileToStream) {
@@ -95,6 +94,10 @@ app.get('/v/:torrentHash', (req, res) => {
 
     res.writeHead(200, headers)
     fileToStream.createReadStream().pipe(res)
+})
+
+app.get('*', (req, res) => {
+    res.sendFile(__dirname + '/index.html')
 })
 
 export default app
