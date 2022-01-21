@@ -29,7 +29,7 @@
         "firebase-admin": "^8.8.0",
         "google-auth-library": "^5.5.1",
         "googleapis": "^45.0.0",
-        "log4js": "^6.1.0",
+        "log4js": "^6.4.0",
         "luxon": "^1.21.2",
         "node-cache": "^5.0.2",
         "node-fetch": "^2.6.0",
