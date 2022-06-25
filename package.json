@@ -32,7 +32,7 @@
         "log4js": "^6.1.0",
         "luxon": "^1.21.2",
         "node-cache": "^5.0.2",
-        "node-fetch": "^2.6.0",
+        "node-fetch": "^2.6.7",
         "parse-torrent": "^7.0.1",
         "webtorrent": "^0.107.17"
     },
