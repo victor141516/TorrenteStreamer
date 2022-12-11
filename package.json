@@ -24,7 +24,7 @@
         "@types/webtorrent": "^0.107.1",
         "bottleneck": "^2.19.5",
         "cors": "^2.8.5",
-        "express": "^4.17.1",
+        "express": "^4.17.3",
         "express-fileupload": "^1.1.6",
         "firebase-admin": "^8.8.0",
         "google-auth-library": "^5.5.1",
